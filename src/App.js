@@ -10,14 +10,14 @@ class App extends Component {
       title: '',
       selected: [],
       tags: [
-        { id: 0, name: 'action' },
-        { id: 1, name: 'adventure' },
-        { id: 2, name: 'comedy' },
+        { _id: 0, name: 'action' },
+        { _id: 1, name: 'adventure' },
+        { _id: 2, name: 'comedy' },
       ],
       series: [
-        { id: 0, title: 'gotham' },
-        { id: 2, title: 'the flash' },
-        { id: 3, title: 'arrow' },
+        { _id: 0, title: 'gotham' },
+        { _id: 2, title: 'the flash' },
+        { _id: 3, title: 'arrow' },
       ]
     }
 

@@ -14,16 +14,19 @@ class ChipListInput extends Component {
     };
 
     this.handleUserInput = this.handleUserInput.bind(this);
+    this.handleKeyDown = this.handleKeyDown.bind(this);
     this.selectAutocompleteSuggestion = this.selectAutocompleteSuggestion.bind(this);
   }
 
   selectAutocompleteSuggestion(id) {
-    const item = this.props.series.find(x => x.id === id);
-    console.log(item);
+    console.log('selected id > ', id);
+    const item = this.props.chipOptions.find(x => x._id === id);
+    this.updateList(item);
+    this.setState({ [this.props.attr]: '' });
   }
 
   persistListState(list) {
-    this.props.updateChipList(this.props.attr, list);
+    this.props.updateChipList(this.props.name, list);
     this.setStateRemoval(false);
   }
 
@@ -32,28 +35,19 @@ class ChipListInput extends Component {
     this.persistListState(list);
   }
 
-  addInputItem() {
-    const activeSuggestion = this.props.chipOptions[this.state.activeSuggestion];
-    if (activeSuggestion) return this.selectTypeaheadEntry(activeSuggestion._id);
-  }
-
-  selectTypeaheadEntry(id) {
-    const item = this.props.chipOptions.find(x => x._id === id);
-    this.updateList(item);
-    this.setState({ [this.props.attr]: '' });
-  }
-
   removeInputItem(name) {
     const list = this.props.chipsSelected.filter(x => x[this.props.attr] !== name);
     this.persistListState(list);
   }
 
   removeLastInputItem() {
+    console.log('remove last');
     const list = this.props.chipsSelected.slice(0, this.props.chipsSelected.length - 1);
     this.persistListState(list);
   }
 
   setStateRemoval(value) {
+    console.log('set removal');
     this.setState({ readyRemoval: value });
   }
 
@@ -64,31 +58,30 @@ class ChipListInput extends Component {
 
   handleKeyDown(event) {
     const { keyCode } = event;
-    if (keyCode === Enums.keyCode.enter && this.state.text) {
+    console.log('chip key down! > ', keyCode);
+    if (keyCode === Enums.keyCode.backspace && !this.state[this.props.attr]) {
       event.preventDefault();
-      this.addInputItem();
-    } else if (keyCode === Enums.keyCode.backspace && !this.state.text) {
       if (!this.state.readyRemoval) return this.setStateRemoval(true);
       if (this.state.readyRemoval) return this.removeLastInputItem();
     }
   }
 
   render() {
-    const { attr, name, chipsSelected, chipOptions, updateChipList } = this.props;
-    // console.log('%c input list => ', 'font-weight: bold; font-size: 18px', list);
-    const chips = chipOptions.filter(x => x !== undefined).map((item, index, array) => {
+    const { attr, chipOptions, chipsSelected } = this.props;
+    console.log('%c input list => ', 'font-weight: bold; font-size: 18px', chipOptions);
+    const chips = chipsSelected.filter(x => x !== undefined).map((item, index, array) => {
       const readyRemoval = this.state.readyRemoval && index === array.length - 1;
       return (
         <span key={index} className={`input-chip input-chip-deletable${readyRemoval ? ' active' : ''}`}>
-          <span className="input-chip-text">{ item.name }</span>
+          <span className="input-chip-text">{ item[attr] }</span>
           <button type="button"
                   className="button-icon small input-chip-delete"
                   title="remove"
                   icon={Icons.cross}
-                  onClick={() => this.removeInputItem(item.name)}
+                  onClick={() => this.removeInputItem(item[attr])}
             ></button>
         </span>
-      );
+      )
     });
     const hasChips = chips.length > 0;
     // const hasAutoComplete = chipOptions.length > 0;
@@ -101,11 +94,14 @@ class ChipListInput extends Component {
           filter={this.state[attr]}
           onChange={this.handleUserInput}
           onSelect={this.selectAutocompleteSuggestion}
+          onKeyDown={this.handleKeyDown}
         />
         {
           !!hasChips &&
           <div className="list">
-          { chips }
+              <div className="chip-list-inner">
+              { chips }
+              </div>
           </div>
         }
       </div>
@@ -122,46 +118,3 @@ ChipListInput.propTypes = {
 }
 
 export default ChipListInput
-
-// <div className="input-list-container has-float-label input-container">
-//   <div className="input-list-wrapper">
-//     <input
-//       className="flex-all"
-//       type="text"
-//       name={name}
-//       value={this.state.text}
-//       placeholder={placeholder}
-//       onChange={(e) => this.handleText(e)}
-//       onKeyDown={(e) => this.handleKeyDown(e)}
-//       />
-//     <label className={`${hasInputs ? 'input-has-content' : ''}`}>
-//       { label }
-//     </label>
-//     {
-//       hasInputs &&
-//       <div className="list">
-//         { inputList }
-//       </div>
-//     }
-//   </div>
-//   {
-//     hasAutoComplete &&
-//       <ul className="autocomplete-menu">
-//         {
-//           autoCompleteList.map((item, index) => {
-//             const activeSuggestion = this.state.activeSuggestion === index ? ' active' : '';
-//             return (
-//               <li key={item._id}
-//                 className={`autocomplete-suggestion${activeSuggestion}`}>
-//                 <button type="button"
-//                   className="button ripple"
-//                   onClick={() => this.selectTypeaheadEntry(item._id)}>
-//                   { this.highlightMatch(item.name) }
-//                 </button>
-//               </li>
-//             );
-//           })
-//         }
-//       </ul>
-//   }
-// </div>

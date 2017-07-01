@@ -3,6 +3,7 @@ export const Enums = {
   keyCode: {
     enter: 13,
     up: 38,
-    down: 40
+    down: 40,
+    backspace: 8
   }
 }

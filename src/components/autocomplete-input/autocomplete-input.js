@@ -21,14 +21,16 @@ class AutocompleteInput extends Component {
   }
 
   selectActiveSuggestion() {
-    const item = this.props.items[this.state.activeSuggestion];
-    this.selectAutocompleteSuggestion(item.id);
+    const item = this.filterAutoComplete()[this.state.activeSuggestion];
+    this.selectAutocompleteSuggestion(item._id);
   }
 
   filterAutoComplete() {
     const { items, attr, filter } = this.props;
-    if (!(items && filter)) return Array(0);
-    return items.filter(x => x[attr].indexOf(filter) > -1);
+    if (!(items && filter)) return [];
+
+    const filterLowerCase = filter.toLowerCase();
+    return items.filter(x => x[attr].toLowerCase().indexOf(filterLowerCase) > -1);
   }
 
   updateActiveSuggestion(value) {
@@ -40,7 +42,7 @@ class AutocompleteInput extends Component {
   }
 
   highlightMatch(value) {
-    const match = value.match(this.props.filter);
+    const match = value.match(new RegExp(this.props.filter, 'i'));
     if (!match) return value;
 
     const length = this.props.filter.length;
@@ -69,6 +71,8 @@ class AutocompleteInput extends Component {
       this.updateActiveSuggestion(1);
     } else if (keyCode === Enums.keyCode.up) {
       this.updateActiveSuggestion(-1);
+    } else if(this.props.onKeyDown) {
+      this.props.onKeyDown(event);
     }
   }
 
@@ -80,7 +84,7 @@ class AutocompleteInput extends Component {
       <div className="autocomplete">
         <ClearableInput
           name={attr}
-          search={filter}
+          value={filter}
           onChange={this.handleInputFilter}
           onKeyDown={this.handleKeyDown}
         />
@@ -92,12 +96,13 @@ class AutocompleteInput extends Component {
                 const activeSuggestion = this.state.activeSuggestion === index ? ' active' : '';
                 return (
                   <li
-                    key={item.id}
+                    key={item._id}
                     className={`autocomplete-suggestion${activeSuggestion}`}>
                     <button
                       type="button"
                       className="button ripple"
-                      onClick={() => this.selectAutocompleteSuggestion(item.id)}>
+                      title={item[attr]}
+                      onClick={() => this.selectAutocompleteSuggestion(item._id)}>
                       { this.highlightMatch(item[attr]) }
                     </button>
                   </li>
@@ -116,7 +121,8 @@ AutocompleteInput.propTypes = {
   items: PropTypes.arrayOf(PropTypes.object).isRequired,
   filter: PropTypes.string.isRequired,
   onChange: PropTypes.func.isRequired,
-  onSelect: PropTypes.func.isRequired
+  onSelect: PropTypes.func.isRequired,
+  onKeyDown: PropTypes.func
 }
 
 export default AutocompleteInput
